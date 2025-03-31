@@ -1,0 +1,48 @@
+---
+# https://docs.docker.com/engine/install/debian/
+
+
+- name: Remove old docker
+  ansible.builtin.apt:
+    name: 
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - podman-docker
+      - containerd
+      - runc
+    state: absent
+
+- name: Install tools
+  ansible.builtin.apt:
+    name: 
+      - ca-certificates
+      - curl
+      - gpg
+    state: present
+    update_cache: yes
+    install_recommends: yes
+
+- name: Add docker repo GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+    state: present
+
+- name: Add Docker repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    state: present
+    update_cache: True
+
+- name: Install docker
+  ansible.builtin.apt:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin 
+    state: present
+    update_cache: yes
+    install_recommends: yes

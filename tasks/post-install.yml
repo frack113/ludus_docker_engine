@@ -1,0 +1,33 @@
+---
+# https://docs.docker.com/engine/install/linux-postinstall/
+
+- name: Ensure group "docker" exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add the user 'localuser' to docker groups
+  ansible.builtin.user:
+    name: localuser
+    groups: docker
+    append: yes
+  when: ludus_docker_engine_add_localuser and not ansible_distribution == 'Debian'
+
+- name: Add the user 'debian' to docker groups
+  ansible.builtin.user:
+    name: debian
+    groups: docker
+    append: yes
+  when: ludus_docker_engine_add_localuser and ansible_distribution == 'Debian'
+
+- name: Start service docker.service
+  ansible.builtin.service:
+    name: docker.service
+    state: started
+    enabled: true
+
+- name: Start service containerd.service
+  ansible.builtin.service:
+    name: containerd.service
+    state: started
+    enabled: true

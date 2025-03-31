@@ -1,0 +1,53 @@
+---
+# https://docs.docker.com/engine/install/ubuntu/
+
+- name: Trick for boot ssh timeout
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service
+    regexp: '^ExecStart=/usr/lib/systemd/systemd-networkd-wait-online$'
+    line: ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --timeout=5
+  when: ansible_distribution_major_version == '24' 
+
+- name: Remove old docker
+  ansible.builtin.apt:
+    name: 
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - docker-compose-v2
+      - podman-docker
+      - containerd 
+    state: absent
+
+- name: Install tools
+  ansible.builtin.apt:
+    name: 
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: yes
+    install_recommends: yes
+
+- name: Add docker repo GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+    state: present
+
+- name: Add Docker repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    state: present
+    update_cache: True
+
+- name: Install docker
+  ansible.builtin.apt:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin 
+    state: present
+    update_cache: yes
+    install_recommends: yes
